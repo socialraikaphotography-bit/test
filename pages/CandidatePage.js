@@ -50,6 +50,7 @@ class CandidatePage {
     });
 
     const count = await this.cards.count();
+    console.log(`[DEBUG] Total cards found: ${count}`);
 
     for (let i = 0; i < count; i++) {
       const card = this.cards.nth(i);
@@ -85,10 +86,12 @@ class CandidatePage {
       );
 
       if (hasExcludeWord) {
+        console.log(`[DEBUG] Card ${i + 1} skipped`);
         continue;
       }
 
       const checkbox = this.getCheckbox(card);
+      console.log(`[DEBUG] Card ${i + 1} selected`);
       await checkbox.scrollIntoViewIfNeeded();
       await checkbox.click();
       await this.page.waitForTimeout(300);
@@ -100,17 +103,20 @@ class CandidatePage {
     const maxPages = 4;
 
     while (pageNo <= maxPages) {
+      console.log(`[DEBUG] Processing page ${pageNo}`);
       await this.verifyRelevantApplication(jobName, includeWords, excludeWords);
-      await this.sendBulkSMS(true);
+      await this.sendBulkSMS(false);
       await this.exportData();
 
       if (
         (await this.nextButton.count()) === 0 ||
         !(await this.nextButton.isEnabled())
       ) {
+        console.log("[DEBUG] No more pages available");
         break;
       }
       if (pageNo === maxPages) {
+        console.log("[DEBUG] Max Page limit reached");
         break;
       }
 
@@ -125,18 +131,23 @@ class CandidatePage {
     if (send) {
       await this.page.waitForTimeout(500);
       if (await this.bulkSMSBtn.isEnabled()) {
+        console.log("[DEBUG] Clicking Bulk SMS");
         await this.bulkSMSBtn.click({ timeout: 10000 });
+        console.log("[DEBUG] Opening Bulk SMS dialog");
         await this.sendSMSBtn.click({ timeout: 10000 });
+        console.log("[DEBUG] Sending Bulk SMS");
       }
     }
   }
 
   async exportData() {
     await this.page.waitForTimeout(500);
+    console.log("[DEBUG] Exporting candidate data");
     if (await this.exportBtn.isEnabled()) {
       const filePath = await DownloadUtils.downloadFile(this.page, async () => {
         await this.exportBtn.click({ timeout: 10000 });
       });
+      console.log("[DEBUG] CSV download completed");
       return filePath;
     }
   }

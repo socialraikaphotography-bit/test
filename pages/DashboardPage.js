@@ -69,6 +69,7 @@ class DashboardPage {
   }
 
   async selectJobName(jobName) {
+    console.log(`[DEBUG] Selecting Job: ${jobName}`);
     await this.getActiveJob(jobName).click({ timeout: 10000 });
 
     await expect(this.jobPageHeader).toHaveText(
@@ -78,11 +79,13 @@ class DashboardPage {
 
   async selectDataBase() {
     await this.dataBaseBtn.click({ timeout: 10000 });
+    console.log("[DEBUG] Database selected");
   }
 
   async selectPageLimit() {
     await this.pageLimitBtn.click();
     await this.pageLimit50.click({ timeout: 10000 });
+    console.log("[DEBUG] Page limit set to 50");
   }
 
   async openFilterOption(section) {
@@ -94,6 +97,7 @@ class DashboardPage {
   }
 
   async selectFilterRadioOptions(section, option) {
+    console.log("[DEBUG] Applying candidate filters");
     await this.openFilterOption(section);
     await this.getFilterRadioOptions(section, option).click({ timeout: 5000 });
   }

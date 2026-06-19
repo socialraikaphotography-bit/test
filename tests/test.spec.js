@@ -18,6 +18,9 @@ for (const jobName of JOB_NAMES) {
   ReportStore.addJob(jobName);
   test(`Verify ${jobName} page`, async ({ page }) => {
     try {
+      console.log("====================================");
+      console.log(`[DEBUG] Starting Job: ${jobName}`);
+      console.log("====================================");
       const loginPage = new LoginPage(page);
       const dashboardPage = new DashboardPage(page);
       const candidatePage = new CandidatePage(page);
@@ -33,19 +36,27 @@ for (const jobName of JOB_NAMES) {
       await dashboardPage.selectDataBase();
       await dashboardPage.selectPageLimit();
 
+      console.log("[DEBUG] Candidate Active In: 1 Month");
       await dashboardPage.selectFilterRadioOptions(
         "Candidate Active In",
         "1 Month",
       );
+
+      console.log("[DEBUG] Preferred Languages: Hindi, Kannada");
       await dashboardPage.selectFilterSelectOptions(
         "Preferred Languages",
         "Hindi,Kannada",
       );
+
+      console.log("[DEBUG] Minimum Experience: 1 Year");
       await dashboardPage.selectFilterDropdownOption("Experience", "1 Year");
+
+      console.log("[DEBUG] Maximum Salary: 25000");
       await dashboardPage.enterFilterOption("Salary", "25000");
 
       const DISTANCES = ["5 KM", "10 KM"];
       for (const distance of DISTANCES) {
+        console.log(`[DEBUG] Location Distance: ${distance}`);
         await dashboardPage.selectFilterRadioOptions(
           "Location Distance",
           distance,
@@ -57,8 +68,10 @@ for (const jobName of JOB_NAMES) {
         );
       }
 
+      console.log("[DEBUG] Starting CSV merge");
       const excelFile = await ExcelUtils.mergeCsvToExcel(jobName);
       FileUtils.clearDownloadsFolder();
+      console.log(`[DEBUG] Excel generated: ${fileName}`);
 
       if (excelFile) {
         ReportStore.updateExcel(jobName, path.basename(excelFile));
@@ -78,4 +91,8 @@ for (const jobName of JOB_NAMES) {
 test.afterAll(async () => {
   // ReportStore.printReport();
   ReportStore.generateEmailReport();
+  console.log("");
+  console.log("====================================");
+  console.log("[DEBUG] FINAL EXECUTION REPORT");
+  console.log("====================================");
 });
