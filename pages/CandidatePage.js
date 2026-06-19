@@ -105,7 +105,7 @@ class CandidatePage {
     while (pageNo <= maxPages) {
       console.log(`[DEBUG] Processing page ${pageNo}`);
       await this.verifyRelevantApplication(jobName, includeWords, excludeWords);
-      await this.sendBulkSMS(false);
+      await this.sendBulkSMS(true);
       await this.exportData();
 
       if (

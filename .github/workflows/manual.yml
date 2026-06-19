@@ -62,7 +62,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
 
-          subject: WorkIndia Playwright Report
+          subject: "WorkIndia Report - ${{ job.status }} - Run #${{ github.run_number }}"
 
           to: ${{ secrets.TO_EMAIL }}
           from: ${{ secrets.EMAIL_USERNAME }}
