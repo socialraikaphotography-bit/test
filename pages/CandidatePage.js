@@ -75,7 +75,7 @@ class CandidatePage {
       let relExp = "";
 
       if (await relExpLocator.count()) {
-        relExp = normalizeJobText(
+        relExp = this.normalizeJobText(
           (await relExpLocator.first().textContent()) || "",
         );
       }
@@ -85,7 +85,7 @@ class CandidatePage {
       let currJob = "";
 
       if (await currJobLocator.count()) {
-        currJob = normalizeJobText(
+        currJob = this.normalizeJobText(
           (await currJobLocator.first().textContent()) || "",
         );
       }

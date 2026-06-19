@@ -36,7 +36,7 @@ for (const jobName of JOB_NAMES) {
       await dashboardPage.selectDataBase();
       await dashboardPage.selectPageLimit();
 
-      console.log("[DEBUG] Candidate Active In: 1 Month");
+      console.log("[DEBUG] Candidate Active In: 7 Days");
       await dashboardPage.selectFilterRadioOptions(
         "Candidate Active In",
         "7 Days",
