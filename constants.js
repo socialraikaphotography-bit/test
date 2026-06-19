@@ -1,5 +1,8 @@
-const JOB_NAMES = ["Telesales Executive", "photographer assistant"];
-// const JOB_NAMES = ["photographer assistant"];
+if (!process.env.JOB_NAMES?.trim()) {
+  throw new Error("JOB_NAMES is not configured");
+}
+
+const JOB_NAMES = process.env.JOB_NAMES.split(",").map((job) => job.trim());
 
 const INCLUDE_WORDS = [
   "telecall",

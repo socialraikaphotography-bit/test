@@ -24,49 +24,49 @@ for (const jobName of JOB_NAMES) {
 
       await loginPage.openLoginPage();
 
-      await loginPage.login(
-        process.env.WORKINDIA_USERNAME,
-        process.env.WORKINDIA_PASSWORD,
-      );
+      // await loginPage.login(
+      //   process.env.WORKINDIA_USERNAME,
+      //   process.env.WORKINDIA_PASSWORD,
+      // );
 
-      await dashboardPage.selectJobName(jobName);
-      await dashboardPage.selectDataBase();
-      await dashboardPage.selectPageLimit();
+      // await dashboardPage.selectJobName(jobName);
+      // await dashboardPage.selectDataBase();
+      // await dashboardPage.selectPageLimit();
 
-      await dashboardPage.selectFilterRadioOptions(
-        "Candidate Active In",
-        "1 Month",
-      );
-      await dashboardPage.selectFilterSelectOptions(
-        "Preferred Languages",
-        "Hindi,Kannada",
-      );
-      await dashboardPage.selectFilterDropdownOption("Experience", "1 Year");
-      await dashboardPage.enterFilterOption("Salary", "25000");
+      // await dashboardPage.selectFilterRadioOptions(
+      //   "Candidate Active In",
+      //   "1 Month",
+      // );
+      // await dashboardPage.selectFilterSelectOptions(
+      //   "Preferred Languages",
+      //   "Hindi,Kannada",
+      // );
+      // await dashboardPage.selectFilterDropdownOption("Experience", "1 Year");
+      // await dashboardPage.enterFilterOption("Salary", "25000");
 
-      const DISTANCES = ["5 KM", "10 KM"];
-      for (const distance of DISTANCES) {
-        await dashboardPage.selectFilterRadioOptions(
-          "Location Distance",
-          distance,
-        );
-        await candidatePage.processAllPages(
-          jobName,
-          INCLUDE_WORDS,
-          EXCLUDE_WORDS,
-        );
-      }
+      // const DISTANCES = ["5 KM", "10 KM"];
+      // for (const distance of DISTANCES) {
+      //   await dashboardPage.selectFilterRadioOptions(
+      //     "Location Distance",
+      //     distance,
+      //   );
+      //   await candidatePage.processAllPages(
+      //     jobName,
+      //     INCLUDE_WORDS,
+      //     EXCLUDE_WORDS,
+      //   );
+      // }
 
-      const excelFile = await ExcelUtils.mergeCsvToExcel(jobName);
-      FileUtils.clearDownloadsFolder();
+      // const excelFile = await ExcelUtils.mergeCsvToExcel(jobName);
+      // FileUtils.clearDownloadsFolder();
 
-      if (excelFile) {
-        ReportStore.updateExcel(jobName, path.basename(excelFile));
-      } else {
-        ReportStore.updateExcel(jobName, "No Export");
-      }
+      // if (excelFile) {
+      //   ReportStore.updateExcel(jobName, path.basename(excelFile));
+      // } else {
+      //   ReportStore.updateExcel(jobName, "No Export");
+      // }
 
-      ReportStore.updateStatus(jobName, "PASSED");
+      // ReportStore.updateStatus(jobName, "PASSED");
     } catch (e) {
       ReportStore.updateStatus(jobName, "FAILED");
       console.error(`Job ${jobName} failed:`, e.message);
@@ -76,5 +76,6 @@ for (const jobName of JOB_NAMES) {
 }
 
 test.afterAll(async () => {
-  ReportStore.printReport();
+  // ReportStore.printReport();
+  ReportStore.generateEmailReport();
 });

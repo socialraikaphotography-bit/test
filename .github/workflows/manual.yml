@@ -1,0 +1,73 @@
+name: Playwright Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_name:
+        description: "Enter Job Name"
+        required: true
+        default: "Telesales Executive"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Run Playwright Tests
+        env:
+          WORKINDIA_USERNAME: ${{ secrets.WORKINDIA_USERNAME }}
+          WORKINDIA_PASSWORD: ${{ secrets.WORKINDIA_PASSWORD }}
+          JOB_NAMES: ${{ github.event.inputs.job_name }}
+        run: npx playwright test
+
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload Excel Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: excel-reports
+          path: "*.xlsx"
+          retention-days: 30
+
+      - name: Send Email Report
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+
+          subject: WorkIndia Playwright Report
+
+          to: ${{ secrets.TO_EMAIL }}
+          from: ${{ secrets.EMAIL_USERNAME }}
+
+          html_body: file://email-report.html
+
+          attachments: |
+            *.xlsx

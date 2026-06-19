@@ -28,14 +28,15 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
 
       - name: Run Playwright Tests
         env:
           WORKINDIA_USERNAME: ${{ secrets.WORKINDIA_USERNAME }}
           WORKINDIA_PASSWORD: ${{ secrets.WORKINDIA_PASSWORD }}
-        run: npx playwright test
+          JOB_NAMES: ${{ secrets.JOB_NAMES }}
+        run: npx playwright test --headless
 
       - name: Upload Playwright Report
         if: always()
@@ -64,20 +65,12 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
 
-          subject: Playwright Execution Report - ${{ job.status }}
+          subject: WorkIndia Playwright Report
 
           to: ${{ secrets.TO_EMAIL }}
           from: ${{ secrets.EMAIL_USERNAME }}
 
-          body: |
-            Playwright execution completed.
-
-            Status: ${{ job.status }}
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref_name }}
-
-            Run URL:
-            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          html_body: file://email-report.html
 
           attachments: |
             *.xlsx

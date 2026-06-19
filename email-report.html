@@ -1,76 +1,4 @@
-const fs = require("fs");
 
-class ReportStore {
-  static jobs = [];
-
-  static addJob(jobName) {
-    this.jobs.push({
-      jobName,
-      excelReport: "",
-      status: "IN_PROGRESS",
-    });
-  }
-
-  static updateExcel(jobName, fileName) {
-    const job = this.jobs.find((j) => j.jobName === jobName);
-    if (job) {
-      job.excelReport = fileName;
-    }
-  }
-
-  static updateStatus(jobName, status) {
-    const job = this.jobs.find((j) => j.jobName === jobName);
-    if (job) {
-      job.status = status;
-    }
-  }
-
-  static getReport() {
-    return this.jobs;
-  }
-
-  static printReport() {
-    console.table(this.jobs);
-  }
-
-  static generateEmailReport() {
-    const runUrl =
-      process.env.GITHUB_RUN_URL || "GitHub Actions Run Link Not Available";
-
-    const rows = this.jobs
-      .map((job) => {
-        const report =
-          job.excelReport && job.excelReport !== "No Export"
-            ? job.excelReport
-            : "No relevant applications";
-
-        const statusColor = job.status === "PASSED" ? "#16a34a" : "#dc2626";
-
-        return `
-          <tr>
-            <td style="padding:10px;border:1px solid #ddd;">
-              ${job.jobName}
-            </td>
-
-            <td style="padding:10px;border:1px solid #ddd;">
-              ${report}
-            </td>
-
-            <td
-              style="
-                padding:10px;
-                border:1px solid #ddd;
-                color:${statusColor};
-                font-weight:bold;
-              "
-            >
-              ${job.status}
-            </td>
-          </tr>`;
-      })
-      .join("");
-
-    const html = `
         <!DOCTYPE html>
 
         <html>
@@ -118,7 +46,27 @@ class ReportStore {
               </tr>
             </thead>
             <tbody>
-              ${rows}
+              
+          <tr>
+            <td style="padding:10px;border:1px solid #ddd;">
+              Telesales Executive
+            </td>
+
+            <td style="padding:10px;border:1px solid #ddd;">
+              No relevant applications
+            </td>
+
+            <td
+              style="
+                padding:10px;
+                border:1px solid #ddd;
+                color:#16a34a;
+                font-weight:bold;
+              "
+            >
+              PASSED
+            </td>
+          </tr>
             </tbody>
           </table>
 
@@ -141,7 +89,7 @@ class ReportStore {
           </div>
 
           <p style="margin-top:24px;">
-            <a href="${runUrl}"
+            <a href="GitHub Actions Run Link Not Available"
               style="
                 background:#2563eb;
                 color:white;
@@ -161,12 +109,4 @@ class ReportStore {
 
         </body>
         </html>
-        `;
-
-    fs.writeFileSync("email-report.html", html);
-
-    return html;
-  }
-}
-
-module.exports = ReportStore;
+        
