@@ -10,3 +10,4 @@ node_modules/
 email-report.html
 *.xlsx
 !job-filters.xlsx
+reports/

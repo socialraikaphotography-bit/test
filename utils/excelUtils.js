@@ -67,7 +67,13 @@ class ExcelUtils {
       today.getFullYear() +
       ".xlsx";
 
-    const excelPath = path.join(process.cwd(), fileName);
+    const reportsDir = path.join(process.cwd(), "reports");
+
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+
+    const excelPath = path.join(reportsDir, fileName);
 
     await workbook.xlsx.writeFile(excelPath);
 

@@ -51,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: excel-reports
-          path: "*.xlsx"
+          path: "reports/*.xlsx"
           retention-days: 30
 
       - name: Send Email Report
@@ -73,4 +73,4 @@ jobs:
           html_body: file://email-report.html
 
           attachments: |
-            *.xlsx
+            reports/*.xlsx
