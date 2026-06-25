@@ -8,18 +8,38 @@ const FileUtils = require("../utils/fileUtils");
 const path = require("path");
 require("dotenv").config();
 
-const { JOB_NAMES, INCLUDE_WORDS, EXCLUDE_WORDS } = require("../constants");
+const JobConfigReader = require("../utils/jobConfigReader");
+const ALL_JOB_CONFIGS = JobConfigReader.getConfigs();
+
+const selectedJobs =
+  process.env.JOB_NAMES?.split(",").map((job) => job.trim().toLowerCase()) ||
+  [];
+
+const JOB_CONFIGS =
+  selectedJobs.length === 0
+    ? ALL_JOB_CONFIGS
+    : ALL_JOB_CONFIGS.filter((config) =>
+        selectedJobs.includes(config.jobName.toLowerCase()),
+      );
+
+if (JOB_CONFIGS.length === 0) {
+  throw new Error(
+    `No matching job configuration found for: ${
+      process.env.JOB_NAME || process.env.JOB_NAMES
+    }`,
+  );
+}
 
 test.beforeAll(async () => {
   FileUtils.clearDownloadsFolder();
 });
 
-for (const jobName of JOB_NAMES) {
-  ReportStore.addJob(jobName);
-  test(`Verify ${jobName} page`, async ({ page }) => {
+for (const config of JOB_CONFIGS) {
+  ReportStore.addJob(config.jobName);
+  test(`Verify ${config.jobName} page`, async ({ page }) => {
     try {
       console.log("====================================");
-      console.log(`[DEBUG] Starting Job: ${jobName}`);
+      console.log(`[DEBUG] 🚀 Starting Job: ${config.jobName}`);
       console.log("====================================");
       const loginPage = new LoginPage(page);
       const dashboardPage = new DashboardPage(page);
@@ -32,66 +52,111 @@ for (const jobName of JOB_NAMES) {
         process.env.WORKINDIA_PASSWORD,
       );
 
-      await dashboardPage.selectJobName(jobName);
+      await dashboardPage.selectJobName(config.jobName);
       await dashboardPage.selectDataBase();
       await dashboardPage.selectPageLimit();
 
-      console.log("[DEBUG] Candidate Active In: 7 Days");
-      await dashboardPage.selectFilterRadioOptions(
-        "Candidate Active In",
-        "7 Days",
+      const locationFilter = config.filters.find(
+        (f) => f.name === "Location Distance",
       );
 
-      console.log("[DEBUG] Preferred Languages: English, Kannada");
-      await dashboardPage.selectFilterSelectOptions(
-        "Preferred Languages",
-        "English,Kannada",
+      const commonFilters = config.filters.filter(
+        (f) => f.name !== "Location Distance",
       );
 
-      console.log("[DEBUG] Minimum Experience: 1 Year");
-      await dashboardPage.selectFilterDropdownOption("Experience", "1 Year");
+      for (const filter of commonFilters) {
+        switch (filter.action.toLowerCase()) {
+          case "radio":
+            console.log(
+              `[DEBUG] 🎯 Applying RADIO filter -> ${filter.name}: ${filter.values[0]}`,
+            );
 
-      // console.log("[DEBUG] Maximum Salary: 25000");
-      // await dashboardPage.enterFilterOption("Salary", "25000");
+            await dashboardPage.selectFilterRadioOptions(
+              filter.name,
+              filter.values[0],
+            );
+            break;
 
-      const DISTANCES = ["5 KM", "10 KM"];
-      for (const distance of DISTANCES) {
-        console.log(`[DEBUG] Location Distance: ${distance}`);
+          case "checkbox":
+            console.log(
+              `[DEBUG] 🎯 Applying CHECKBOX filter -> ${filter.name}: ${filter.values.join(",")}`,
+            );
+
+            await dashboardPage.selectFilterSelectOptions(
+              filter.name,
+              filter.values.join(","),
+            );
+            break;
+
+          case "dropdown":
+            console.log(
+              `[DEBUG] 🎯 Applying DROPDOWN filter -> ${filter.name}: ${filter.values[0]}`,
+            );
+
+            await dashboardPage.selectFilterDropdownOption(
+              filter.name,
+              filter.values[0],
+            );
+            break;
+
+          case "fill":
+            console.log(
+              `[DEBUG] 🎯 Applying TEXT filter -> ${filter.name}: ${filter.values[0]}`,
+            );
+
+            await dashboardPage.enterFilterOption(
+              filter.name,
+              filter.values[0],
+            );
+            break;
+
+          default:
+            console.log(
+              `[DEBUG] 🎯 Unknown filter action '${filter.action}' for '${filter.name}'`,
+            );
+        }
+      }
+
+      for (const distance of locationFilter.values) {
+        console.log(`[DEBUG] 🎯 Processing Location Distance: ${distance}`);
+        await page.pause();
+
         await dashboardPage.selectFilterRadioOptions(
           "Location Distance",
           distance,
         );
+
         await candidatePage.processAllPages(
-          jobName,
-          INCLUDE_WORDS,
-          EXCLUDE_WORDS,
+          config.jobName,
+          config.includeWords,
+          config.excludeWords,
         );
       }
 
-      console.log("[DEBUG] Starting CSV merge");
-      const excelFile = await ExcelUtils.mergeCsvToExcel(jobName);
+      console.log("[DEBUG] 🧩 Starting CSV merge");
+      const excelFile = await ExcelUtils.mergeCsvToExcel(config.jobName);
       FileUtils.clearDownloadsFolder();
 
       if (excelFile) {
-        console.log(`[DEBUG] Excel generated: ${excelFile}`);
-        ReportStore.updateExcel(jobName, path.basename(excelFile));
+        console.log(`[DEBUG] 📊 Excel generated: ${excelFile}`);
+        ReportStore.updateExcel(config.jobName, path.basename(excelFile));
       } else {
-        ReportStore.updateExcel(jobName, "No Export");
+        ReportStore.updateExcel(config.jobName, "No Export");
       }
 
-      ReportStore.updateStatus(jobName, "PASSED");
+      ReportStore.updateStatus(config.jobName, "PASSED");
     } catch (e) {
-      console.log("[DEBUG] Starting CSV merge");
-      const excelFile = await ExcelUtils.mergeCsvToExcel(jobName);
+      console.log("[DEBUG] 🧩 Starting CSV merge");
+      const excelFile = await ExcelUtils.mergeCsvToExcel(config.jobName);
       FileUtils.clearDownloadsFolder();
       if (excelFile) {
-        console.log(`[DEBUG] Excel generated: ${excelFile}`);
-        ReportStore.updateExcel(jobName, path.basename(excelFile));
+        console.log(`[DEBUG] 📊 Excel generated: ${excelFile}`);
+        ReportStore.updateExcel(config.jobName, path.basename(excelFile));
       } else {
-        ReportStore.updateExcel(jobName, "No Export");
+        ReportStore.updateExcel(config.jobName, "No Export");
       }
-      ReportStore.updateStatus(jobName, "FAILED");
-      console.error(`Job ${jobName} failed:`, e.message);
+      ReportStore.updateStatus(config.jobName, "FAILED");
+      console.error(`❌ Job ${config.jobName} failed:`, e.message);
       throw e;
     }
   });
@@ -102,6 +167,6 @@ test.afterAll(async () => {
   ReportStore.generateEmailReport();
   console.log("");
   console.log("====================================");
-  console.log("[DEBUG] FINAL EXECUTION REPORT");
+  console.log("[DEBUG] 📑 FINAL EXECUTION REPORT");
   console.log("====================================");
 });

@@ -9,3 +9,4 @@ node_modules/
 .env
 email-report.html
 *.xlsx
+!job-filters.xlsx

@@ -69,7 +69,7 @@ class DashboardPage {
   }
 
   async selectJobName(jobName) {
-    console.log(`[DEBUG] Selecting Job: ${jobName}`);
+    console.log(`[DEBUG] 💼 Selecting Job: ${jobName}`);
     await this.getActiveJob(jobName).click({ timeout: 10000 });
 
     await expect(this.jobPageHeader).toHaveText(
@@ -79,13 +79,13 @@ class DashboardPage {
 
   async selectDataBase() {
     await this.dataBaseBtn.click({ timeout: 10000 });
-    console.log("[DEBUG] Database selected");
+    console.log("[DEBUG] 🗄️  Database selected");
   }
 
   async selectPageLimit() {
     await this.pageLimitBtn.click();
     await this.pageLimit50.click({ timeout: 10000 });
-    console.log("[DEBUG] Page limit set to 50");
+    console.log("[DEBUG] 🔢 Page limit set to 50");
   }
 
   async openFilterOption(section) {
@@ -97,7 +97,6 @@ class DashboardPage {
   }
 
   async selectFilterRadioOptions(section, option) {
-    console.log("[DEBUG] Applying candidate filters");
     await this.openFilterOption(section);
     await this.getFilterRadioOptions(section, option).click({ timeout: 5000 });
   }
@@ -120,7 +119,9 @@ class DashboardPage {
 
   async selectFilterSelectOptions(section, values) {
     await this.openFilterOption(section);
-    const options = values.split(",").map((v) => v.trim().toLowerCase());
+    const options = values
+      .split(",")
+      .map((v) => v.trim().toLowerCase().replaceAll(" ", "_"));
 
     for (const option of options) {
       await this.page.waitForTimeout(500);
@@ -130,14 +131,6 @@ class DashboardPage {
         await locator.click({ timeout: 5000 });
       }
     }
-
-    // Uncheck English if selected
-    // const englishLocator = this.getFilterSelectOptions(section, "english");
-
-    // await this.page.waitForTimeout(500);
-    // if (await englishLocator.isChecked()) {
-    //   await englishLocator.click({ timeout: 5000 });
-    // }
   }
 
   async forDebug() {

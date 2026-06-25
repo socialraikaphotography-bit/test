@@ -12,14 +12,14 @@ class LoginPage {
   }
 
   async openLoginPage() {
-    console.log("[DEBUG] Opening WorkIndia login page");
+    console.log("[DEBUG] 🌐 Opening WorkIndia login page");
     await this.page.goto("", {
       timeout: 30000,
     });
   }
 
   async login(number, password) {
-    console.log("[DEBUG] Attempting login");
+    console.log("[DEBUG] 🔐 Attempting login");
     await this.phoneNumber.fill(number);
     await this.loginBtn.click();
     await this.page.waitForTimeout(1500);
@@ -35,7 +35,7 @@ class LoginPage {
     await this.page.waitForURL("**/dashboard", {
       timeout: 30000,
     });
-    console.log("[DEBUG] Login successful");
+    console.log("[DEBUG] ✅ Login successful");
   }
 }
 

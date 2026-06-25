@@ -23,7 +23,7 @@ class ReportStore {
     if (job) {
       job.status = status;
     }
-    console.log(`[DEBUG] Status updated for ${jobName}: PASSED`);
+    console.log(`[DEBUG] ✅ Status updated for ${jobName}: PASSED`);
   }
 
   static getReport() {

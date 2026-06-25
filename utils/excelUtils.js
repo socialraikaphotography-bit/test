@@ -12,7 +12,7 @@ class ExcelUtils {
       .filter((file) => file.endsWith(".csv"));
 
     if (csvFiles.length === 0) {
-      console.log("No CSV files found");
+      console.log("[DEBUG] 🚫 No CSV files found");
 
       return null;
     }
