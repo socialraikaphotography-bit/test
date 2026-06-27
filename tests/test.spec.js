@@ -119,12 +119,14 @@ for (const config of JOB_CONFIGS) {
 
       for (const distance of locationFilter.values) {
         console.log(`[DEBUG] 🎯 Processing Location Distance: ${distance}`);
-        await page.pause();
-
         await dashboardPage.selectFilterRadioOptions(
           "Location Distance",
           distance,
         );
+
+        await page.waitForTimeout(3000);
+        console.log(`[DEBUG] Wait for 6 sec...`);
+        await page.waitForTimeout(3000);
 
         await candidatePage.processAllPages(
           config.jobName,
