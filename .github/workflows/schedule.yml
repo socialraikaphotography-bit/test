@@ -36,6 +36,7 @@ jobs:
           WORKINDIA_USERNAME: ${{ secrets.WORKINDIA_USERNAME }}
           WORKINDIA_PASSWORD: ${{ secrets.WORKINDIA_PASSWORD }}
           JOB_NAMES: ${{ secrets.JOB_NAMES }}
+          GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: npx playwright test
 
       - name: Upload Playwright Report

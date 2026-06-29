@@ -11,6 +11,11 @@ require("dotenv").config();
 const JobConfigReader = require("../utils/jobConfigReader");
 const ALL_JOB_CONFIGS = JobConfigReader.getConfigs();
 
+ReportStore.setJobConfiguration(
+  ALL_JOB_CONFIGS.map((x) => x.jobName).join(", "),
+  process.env.JOB_NAME || process.env.JOB_NAMES || "ALL",
+);
+
 const selectedJobs =
   process.env.JOB_NAMES?.split(",").map((job) => job.trim().toLowerCase()) ||
   [];
@@ -23,11 +28,22 @@ const JOB_CONFIGS =
       );
 
 if (JOB_CONFIGS.length === 0) {
-  throw new Error(
-    `No matching job configuration found for: ${
-      process.env.JOB_NAME || process.env.JOB_NAMES
-    }`,
+  console.log("");
+  console.log("====================================");
+  console.log("[DEBUG] 🚫 Job name is not matching");
+  ReportStore.generateEmailReport();
+  console.log(
+    `[DEBUG] Requested Job: ${process.env.JOB_NAME || process.env.JOB_NAMES}`,
   );
+  console.log(
+    "[DEBUG] Please verify the job name in your secrets file and job-filter.xlsx.",
+  );
+  console.log("====================================");
+
+  const availableJobs = ALL_JOB_CONFIGS.map((config) => config.jobName).join(
+    ", ",
+  );
+  process.exit(0);
 }
 
 test.beforeAll(async () => {
@@ -52,7 +68,21 @@ for (const config of JOB_CONFIGS) {
         process.env.WORKINDIA_PASSWORD,
       );
 
-      await dashboardPage.selectJobName(config.jobName);
+      const jobFound = await dashboardPage.selectJobName(config.jobName);
+      if (!jobFound) {
+        ReportStore.updateStatus(config.jobName, "SKIPPED");
+        ReportStore.updateExcel(
+          config.jobName,
+          "Job not present or not active",
+        );
+
+        console.log(
+          `[DEBUG] 🚫 Skipping execution. Job '${config.jobName}' is not available or not active.`,
+        );
+
+        return;
+      }
+
       await dashboardPage.selectDataBase();
       await dashboardPage.selectPageLimit();
 
