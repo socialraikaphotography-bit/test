@@ -22,6 +22,12 @@ class CandidatePage {
       "//button//div[contains(text(),'Bulk SMS')]",
     );
 
+    this.databaseFeedbackHeader = page.locator(".header_row .header", {
+      hasText: "Database Feedback",
+    });
+
+    this.databaseFeedbackClose = page.locator(".header_row .close_cta");
+
     this.exportBtn = page.locator(
       "//button//img[contains(@src,'excel')]/../..",
     );
@@ -55,6 +61,18 @@ class CandidatePage {
   }
 
   //
+  async closeDatabaseFeedbackPopup() {
+    if (await this.databaseFeedbackHeader.isVisible().catch(() => false)) {
+      console.log("[DEBUG] ❎ Database Feedback popup found. Closing...");
+
+      await this.databaseFeedbackClose.click();
+
+      await this.page.waitForTimeout(500);
+
+      console.log("[DEBUG] ✅ Database Feedback popup closed");
+    }
+  }
+
   async verifyRelevantApplication(jobName, includeWords, excludeWords) {
     await this.page.waitForLoadState("networkidle");
 
@@ -67,6 +85,8 @@ class CandidatePage {
       console.log("[DEBUG] 🚫 No candidates found on current page");
       return;
     }
+
+    await this.closeDatabaseFeedbackPopup();
 
     const count = await this.cards.count();
     console.log(`[DEBUG] 🔍 Total cards found: ${count}`);
@@ -139,6 +159,8 @@ class CandidatePage {
       return;
     }
 
+    await this.closeDatabaseFeedbackPopup();
+
     const count = await this.cards.count();
     console.log(`[DEBUG] 🔍 Total cards found: ${count}`);
     console.log("[DEBUG] ✅ Include Words = ALL, selecting all candidates");
@@ -167,7 +189,7 @@ class CandidatePage {
           excludeWords,
         );
       }
-
+      await this.closeDatabaseFeedbackPopup();
       await this.sendBulkSMS(true);
       await this.exportData();
 
@@ -194,6 +216,7 @@ class CandidatePage {
     if (send) {
       await this.page.waitForTimeout(500);
       if (await this.bulkSMSBtn.isEnabled()) {
+        await this.closeDatabaseFeedbackPopup();
         console.log("[DEBUG] 📲 Clicking Bulk SMS");
         await this.bulkSMSBtn.click({ timeout: 10000 });
         console.log("[DEBUG] 💬 Opening Bulk SMS dialog");
@@ -206,6 +229,7 @@ class CandidatePage {
   async exportData() {
     await this.page.waitForTimeout(500);
     if (await this.exportBtn.isEnabled()) {
+      await this.closeDatabaseFeedbackPopup();
       console.log("[DEBUG] 📤 Exporting candidate data");
       const filePath = await DownloadUtils.downloadFile(this.page, async () => {
         await this.exportBtn.click({ timeout: 10000 });
