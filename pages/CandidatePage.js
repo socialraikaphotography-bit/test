@@ -8,6 +8,10 @@ class CandidatePage {
     this.page = page;
 
     // Candidate cards
+    this.selectAllCheckbox = page.locator(
+      "//input[@class='select-all-checkbox']",
+    );
+
     this.cards = page.locator(
       "//div[contains(text(),'Relevant Experience')]/ancestor::div[contains(@class,'profile')]",
     );
@@ -98,7 +102,9 @@ class CandidatePage {
       );
 
       if (hasExcludeWord) {
-        console.log(`[DEBUG] ⏭️  Card ${i + 1} skipped (exclude word found)`);
+        console.log(
+          `[DEBUG] ⏭️  Card ${i + 1} skipped (exclude word found) - ${excludeWords}`,
+        );
         continue;
       }
 
@@ -107,7 +113,9 @@ class CandidatePage {
       );
 
       if (!hasIncludeWord) {
-        console.log(`[DEBUG] ⏭️  Card ${i + 1} skipped (no include word found)`);
+        console.log(
+          `[DEBUG] ⏭️  Card ${i + 1} skipped (no include word found)`,
+        );
         continue;
       }
 
@@ -119,13 +127,47 @@ class CandidatePage {
     }
   }
 
+  async selectAllRelevantApplications() {
+    await this.page.waitForLoadState("networkidle");
+    try {
+      await this.cards.first().waitFor({
+        state: "visible",
+        timeout: 20000,
+      });
+    } catch {
+      console.log("[DEBUG] 🚫 No candidates found on current page");
+      return;
+    }
+
+    const count = await this.cards.count();
+    console.log(`[DEBUG] 🔍 Total cards found: ${count}`);
+    console.log("[DEBUG] ✅ Include Words = ALL, selecting all candidates");
+    await this.selectAllCheckbox.scrollIntoViewIfNeeded();
+    await this.selectAllCheckbox.click();
+    await this.page.waitForTimeout(500);
+  }
+
   async processAllPages(jobName, includeWords, excludeWords) {
     let pageNo = 1;
     const maxPages = 4;
 
     while (pageNo <= maxPages) {
       console.log(`[DEBUG] ⚙️  Processing page ${pageNo}`);
-      await this.verifyRelevantApplication(jobName, includeWords, excludeWords);
+
+      const selectAll = includeWords.some(
+        (word) => word.trim().toUpperCase() === "ALL",
+      );
+
+      if (selectAll) {
+        await this.selectAllRelevantApplications();
+      } else {
+        await this.verifyRelevantApplication(
+          jobName,
+          includeWords,
+          excludeWords,
+        );
+      }
+
       await this.sendBulkSMS(true);
       await this.exportData();
 

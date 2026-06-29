@@ -4,18 +4,19 @@ if (!process.env.JOB_NAMES?.trim()) {
 
 const JOB_NAMES = process.env.JOB_NAMES.split(",").map((job) => job.trim());
 
-const INCLUDE_WORDS = [
-  "telecall",
-  "Tele call",
-  "telesales",
-  "customer service",
-  "inside sales",
-  "BPO",
-  "call center",
-  "sales executive",
-  "Business Development Executive",
-];
+// const INCLUDE_WORDS = [
+//   "telecall",
+//   "Tele call",
+//   "telesales",
+//   "customer service",
+//   "inside sales",
+//   "BPO",
+//   "call center",
+//   "sales executive",
+//   "Business Development Executive",
+// ];
 
-const EXCLUDE_WORDS = ["fresher"];
+// const EXCLUDE_WORDS = ["fresher"];
 
-module.exports = { JOB_NAMES, INCLUDE_WORDS, EXCLUDE_WORDS };
+// module.exports = { JOB_NAMES, INCLUDE_WORDS, EXCLUDE_WORDS };
+module.exports = { JOB_NAMES };
