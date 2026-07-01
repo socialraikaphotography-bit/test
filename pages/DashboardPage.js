@@ -69,12 +69,26 @@ class DashboardPage {
   }
 
   async selectJobName(jobName) {
-    console.log(`[DEBUG] 💼 Selecting Job: ${jobName}`);
-    await this.getActiveJob(jobName).click({ timeout: 10000 });
+    const jobLocator = this.getActiveJob(jobName);
+
+    const isVisible = await jobLocator
+      .isVisible({ timeout: 5000 })
+      .catch(() => false);
+
+    if (!isVisible) {
+      console.log(
+        `[DEBUG] 🚫 Job '${jobName}' is not present in the active jobs list`,
+      );
+      return false;
+    }
+
+    await jobLocator.click();
 
     await expect(this.jobPageHeader).toHaveText(
       new RegExp(`^${jobName}$`, "i"),
     );
+
+    return true;
   }
 
   async selectDataBase() {

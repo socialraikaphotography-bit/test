@@ -3,12 +3,22 @@ const fs = require("fs");
 class ReportStore {
   static jobs = [];
 
+  static metadata = {
+    excelJobs: "",
+    secretJobs: "",
+  };
+
   static addJob(jobName) {
     this.jobs.push({
       jobName,
       excelReport: "",
       status: "IN_PROGRESS",
     });
+  }
+
+  static setJobConfiguration(excelJobs, secretJobs) {
+    this.metadata.excelJobs = excelJobs;
+    this.metadata.secretJobs = secretJobs;
   }
 
   static updateExcel(jobName, fileName) {
@@ -71,6 +81,46 @@ class ReportStore {
       })
       .join("");
 
+    const jobConfiguration =
+      this.metadata.excelJobs || this.metadata.secretJobs
+        ? `
+      <div style="
+        margin-top:20px;
+        padding:16px;
+        background:#fff7ed;
+        border-left:4px solid #f97316;
+      ">
+        <strong>Job Configuration</strong>
+
+        <table style="
+          width:100%;
+          border-collapse:collapse;
+          margin-top:12px;
+        ">
+          <tr>
+            <th style="padding:10px;border:1px solid #ddd;background:#f3f4f6;text-align:left;">
+              Secret File Jobs
+            </th>
+
+            <td style="padding:10px;border:1px solid #ddd;">
+              ${this.metadata.secretJobs}
+            </td>
+          </tr>
+
+          <tr>
+            <th style="padding:10px;border:1px solid #ddd;background:#f3f4f6;text-align:left;">
+              Excel Jobs
+            </th>
+
+            <td style="padding:10px;border:1px solid #ddd;">
+              ${this.metadata.excelJobs}
+            </td>
+          </tr>
+        </table>
+      </div>
+    `
+        : "";
+
     const html = `
         <!DOCTYPE html>
 
@@ -122,6 +172,8 @@ class ReportStore {
               ${rows}
             </tbody>
           </table>
+
+          ${jobConfiguration}
 
           <div style="
             margin-top:24px;
